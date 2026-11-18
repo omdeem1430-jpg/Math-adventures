@@ -108,10 +108,17 @@ const rooms = [
  ]}
 ];
 const KEY="placeValueTown_v1", TEACHER_KEY="placeValueTeacherPin_v1";
-let data=JSON.parse(localStorage.getItem(KEY)||'{"students":{},"skills":{}}');
+// بعض متصفحات iPhone المضمنة تمنع localStorage؛ لا نسمح لذلك بتعطيل أزرار اللعبة.
+let storageAvailable = true;
+function safeGet(key){try{return window.localStorage.getItem(key)}catch(e){storageAvailable=false;return null}}
+function safeSet(key,value){try{window.localStorage.setItem(key,value);return true}catch(e){storageAvailable=false;return false}}
+function safeRemove(key){try{window.localStorage.removeItem(key)}catch(e){storageAvailable=false}}
+let data;
+try{data=JSON.parse(safeGet(KEY)||'{"students":{},"skills":{}}')}catch(e){data={students:{},skills:{}}}
+if(!data || typeof data!=='object' || !data.students || !data.skills)data={students:{},skills:{}};
 let currentName="", roomIndex=0, qIndex=0, answered=false, roomScore=0, gatePassed=false;
 const $=id=>document.getElementById(id);
-function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+function save(){safeSet(KEY,JSON.stringify(data))}
 function show(id){["home","game","teacher"].forEach(x=>$(x).classList.toggle("hide",x!==id))}
 function student(){return data.students[currentName]}
 function initStudent(name){if(!data.students[name])data.students[name]={name,created:new Date().toISOString(),last:new Date().toISOString(),completed:[],correct:0,attempts:0,history:[]};data.students[name].last=new Date().toISOString();save()}
@@ -120,7 +127,14 @@ function renderMap(){
  $("roomGrid").innerHTML=rooms.map((r,i)=>{let done=s&&s.completed.includes(i),unlocked=i===0||(s&&s.completed.includes(i-1));return `<div class="room ${unlocked?'':'locked'}" style="background:${r.color}"><div><div class="emoji">${r.emoji}</div><h3>${i+1}. ${r.title}</h3><small>${done?'✅ مكتملة':unlocked?'🔓 متاحة':'🔒 مغلقة'} • ٣ محطات + تحدي الباب</small></div><button ${unlocked?'':'disabled'} onclick="openRoom(${i})">${done?'إعادة اللعب':'دخول الغرفة'}</button></div>`}).join("");
  let n=s?s.completed.length:0;$("homeProgress").style.width=(n/6*100)+"%";
 }
-$("startBtn").onclick=()=>{let n=$("studentName").value.trim();if(!n){alert("اكتب اسمك أولًا.");return}currentName=n;initStudent(n);$("playerPill").textContent="👋 "+n;renderMap();show("home")};
+$("startBtn").addEventListener("click",()=>{
+ try{
+  let n=$("studentName").value.trim();
+  if(!n){alert("اكتب اسمك أولًا.");$("studentName").focus();return}
+  currentName=n;initStudent(n);$("playerPill").textContent="👋 "+n;renderMap();show("home");
+  if(!storageAvailable)alert("بدأت المغامرة، لكن هذا المتصفح لا يسمح بحفظ النتائج. افتحي الرابط في Safari مباشرة لضمان حفظها.");
+ }catch(err){console.error(err);alert("تعذر بدء اللعبة. أغلقي الصفحة وافتحي الرابط في Safari مباشرة ثم حاولي مرة أخرى.");}
+});
 function openRoom(i){if(i>0&&!student().completed.includes(i-1))return;roomIndex=i;qIndex=0;roomScore=0;gatePassed=false;show("game");renderQuestion()}
 function renderQuestion(){
  const r=rooms[roomIndex],q=r.qs[qIndex];answered=false;
@@ -137,6 +151,7 @@ function renderQuestion(){
 function choose(i){
  if(answered)return;answered=true;
  const q=rooms[roomIndex].qs[qIndex],ok=i===q[2],s=student();
+ if(qIndex===3 && ok) gatePassed=true;
  s.attempts++;if(ok){s.correct++;roomScore++;}s.history.push({room:rooms[roomIndex].title,question:q[0],correct:ok,time:new Date().toISOString()});
  if(!data.skills[roomIndex])data.skills[roomIndex]={attempts:0,correct:0};data.skills[roomIndex].attempts++;if(ok)data.skills[roomIndex].correct++;
  save();
@@ -148,18 +163,22 @@ function choose(i){
 $("nextBtn").onclick=()=>{
  if(qIndex<3){qIndex++;renderQuestion();return}
  const s=student();
- if(gatePassed&&!s.completed.includes(roomIndex)){s.completed.push(roomIndex);s.completed.sort();save()}
+ // تحقق من آخر إجابة فعلية لتحدي الباب؛ يمنع تعارض رسالة الإجابة الصحيحة مع حالة الباب.
+ const last=s.history[s.history.length-1];
+ const challengePassed=!!(last && last.room===rooms[roomIndex].title && last.question===rooms[roomIndex].qs[3][0] && last.correct);
+ gatePassed=challengePassed;
+ if(challengePassed&&!s.completed.includes(roomIndex)){s.completed.push(roomIndex);s.completed.sort();save()}
  if(roomIndex===5&&s.completed.includes(5)){alert("رائع! أكملت جميع غرف مدينة القيم المنزلية! 🏆")}
- else if(roomScore<3){alert("لم تجتز الغرفة هذه المرة. يمكنك إعادة المحاولة والتعلم من التلميحات.")}
- else if(gatePassed){alert("ممتاز! اجتزت تحدي الباب وفتحت الطريق إلى الغرفة التالية.")}else{alert("لم تجتز تحدي الباب بعد. أعد الغرفة وحاول حل السؤال الأخير لفتح الباب.")}
+ else if(challengePassed){alert("ممتاز! إجابتك على تحدي الباب صحيحة، وقد فُتحت الغرفة التالية.")}
+ else{alert("لم تجتز تحدي الباب بعد. أعد الغرفة وحاول حل السؤال الأخير لفتح الباب.")}
  renderMap();show("home")
 };
 $("backHome").onclick=()=>{renderMap();show("home")};
 $("teacherOpen").onclick=()=>{
  let pin=prompt("أدخلي رمز لوحة المعلمة. الرمز الافتراضي أول مرة هو 2468:");
- if(pin===null)return;let saved=localStorage.getItem(TEACHER_KEY)||"2468";
+ if(pin===null)return;let saved=safeGet(TEACHER_KEY)||"2468";
  if(pin!==saved){alert("الرمز غير صحيح.");return}
- if(!localStorage.getItem(TEACHER_KEY)){let p=prompt("هذا أول دخول. غيّري الرمز الافتراضي 2468 إلى رمز خاص:");if(p&&p.length>=4)localStorage.setItem(TEACHER_KEY,p);else alert("تم الإبقاء على الرمز الافتراضي.")}
+ if(!safeGet(TEACHER_KEY)){let p=prompt("هذا أول دخول. غيّري الرمز الافتراضي 2468 إلى رمز خاص:");if(p&&p.length>=4)safeSet(TEACHER_KEY,p);else alert("تم الإبقاء على الرمز الافتراضي.")}
  renderTeacher();show("teacher")
 };
 $("teacherLogout").onclick=()=>show("home");
