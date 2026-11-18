@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>مدينة القيم المنزلية</title>
+<style>
+:root{--ink:#24324a;--pink:#ffb7d2;--blue:#a9dcf5;--yellow:#ffe28a;--green:#bde9c7;--purple:#d7c4ff;--cream:#fffaf0}
+*{box-sizing:border-box}body{margin:0;font-family:Tahoma,Arial,sans-serif;color:var(--ink);background:linear-gradient(135deg,#dff4ff,#fff0f6 48%,#fff5cf);min-height:100vh}
+button,input{font:inherit}button{border:0;border-radius:16px;padding:12px 18px;font-weight:bold;cursor:pointer;background:#365b9b;color:white;box-shadow:0 4px 0 #233f72}button:disabled{opacity:.5;cursor:not-allowed}
+.wrap{max-width:1100px;margin:auto;padding:18px}.top{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.brand{font-size:clamp(24px,4vw,38px);font-weight:900}.sub{opacity:.75;margin-top:4px}.pill{background:white;border:2px solid #e6dff2;border-radius:999px;padding:9px 14px;font-weight:bold}
+.card{background:#ffffffed;border:3px solid white;border-radius:26px;padding:20px;box-shadow:0 10px 28px #526a8720;margin:16px 0}
+.hero{display:grid;grid-template-columns:1.2fr .8fr;gap:18px;align-items:center}.heroart{font-size:90px;text-align:center;background:linear-gradient(140deg,#c4edff,#ffe2ee);border-radius:25px;padding:25px}
+h1,h2,h3{margin-top:0}.muted{color:#69758b}.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}.field{display:grid;gap:7px;margin:12px 0}input{border:2px solid #dce4f1;border-radius:13px;padding:13px;background:white;min-width:0;width:100%}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}.room{border:3px solid white;border-radius:22px;padding:18px;min-height:160px;box-shadow:0 6px 16px #33445516;display:flex;flex-direction:column;justify-content:space-between}.room h3{margin:7px 0}.room .emoji{font-size:35px}.room small{line-height:1.7}.room button{margin-top:12px;background:#334f86}.locked{filter:saturate(.55)}.locked button{background:#929bad;box-shadow:0 4px 0 #707b90}
+.progress{height:12px;background:#e9edf5;border-radius:20px;overflow:hidden}.progress span{display:block;height:100%;background:#54b98a;width:0}
+.option{display:block;width:100%;text-align:right;background:#f5f7fc;color:#26344d;box-shadow:none;border:2px solid #e2e8f2;margin:9px 0;padding:14px;border-radius:14px}.option:hover{border-color:#8cb6ee}.option.correct{background:#e4f8e9;border-color:#5cbd7a}.option.wrong{background:#fff0ef;border-color:#e78b83}
+.feedback{padding:12px;border-radius:14px;margin-top:12px;font-weight:bold}.good{background:#e6f8ec;color:#236c3d}.bad{background:#fff0e9;color:#9b4b28}
+.hide{display:none!important}.tag{font-size:12px;background:#fff;border-radius:99px;padding:6px 10px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat{background:#f5f7fc;border-radius:16px;padding:14px;text-align:center}.stat b{display:block;font-size:25px}.tablewrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:620px}th,td{padding:11px;border-bottom:1px solid #e7ebf2;text-align:right}th{background:#f2f5fb}.notice{font-size:13px;line-height:1.8;background:#fff8df;padding:12px;border-radius:14px}
+footer{text-align:center;padding:20px;color:#66728a;font-size:13px}
+@media(max-width:700px){.hero{grid-template-columns:1fr}.heroart{font-size:65px}.stats{grid-template-columns:1fr 1fr}.wrap{padding:12px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+ <div><div class="brand">🏡 مدينة القيم المنزلية</div><div class="sub">مغامرة رياضية ممتعة للصف الثالث الابتدائي</div></div>
+ <div class="row"><span class="pill" id="playerPill">👋 ضيفنا الصغير</span><button id="teacherOpen">🔐 لوحة المعلمة</button></div>
+</header>
+
+<section id="home">
+ <div class="card hero">
+  <div><span class="tag">🎒 تعلّم • اكتشف • اجتز التحدي</span><h1>أهلًا بك في مدينة الأعداد!</h1>
+   <p>ادخل باسمك، ثم تجوّل بين الغرف الست. في كل غرفة ثلاث محطات، وبعدها سؤال بوابة أصعب لفتح الطريق إلى المغامرة التالية.</p>
+   <div class="field"><label for="studentName">اسم الطالب / الطالبة</label><input id="studentName" maxlength="40" placeholder="اكتب اسمك هنا"></div>
+   <button id="startBtn">🚀 ابدأ المغامرة</button>
+  </div><div class="heroart">🏘️🔢✨</div>
+ </div>
+ <div class="card"><h2>🗺️ خريطة المدينة</h2><p class="muted">افتح الغرف بالترتيب واجمع النجوم.</p><div class="progress"><span id="homeProgress"></span></div><div id="roomGrid" class="grid" style="margin-top:16px"></div></div>
+</section>
+
+<section id="game" class="hide">
+ <div class="card">
+  <div class="row" style="justify-content:space-between"><button id="backHome" style="background:#68758c">↩ الخريطة</button><span class="pill" id="roomCounter"></span></div>
+  <h1 id="roomTitle"></h1><p id="roomIntro" class="muted"></p>
+  <div class="row"><span class="tag" id="stationLabel">المحطة 1 من 3</span><span class="tag" id="scoreLabel">⭐ 0</span></div>
+  <div class="progress" style="margin:12px 0 18px"><span id="roomProgress"></span></div>
+  <h2 id="question"></h2><div id="options"></div><div id="feedback" class="feedback hide"></div>
+  <div class="row" style="margin-top:16px"><button id="nextBtn" class="hide">التالي ←</button></div>
+ </div>
+</section>
+
+<section id="teacher" class="hide">
+ <div class="card">
+  <div class="row" style="justify-content:space-between"><h1>📊 لوحة المعلمة</h1><button id="teacherLogout" style="background:#68758c">خروج</button></div>
+  <p class="muted">المعلمة: فاطمة القرني</p>
+  <div class="notice">هذه نسخة تعمل محليًا دون إنترنت. تُحفظ النتائج على هذا الجهاز والمتصفح فقط. لا تتم مزامنتها تلقائيًا مع أجهزة أخرى، كما أن رمز الدخول المحلي ليس بديلًا عن نظام حسابات آمن على خادم.</div>
+  <div class="stats" style="margin:16px 0">
+   <div class="stat"><b id="statStudents">0</b><span>عدد المشاركين</span></div>
+   <div class="stat"><b id="statAttempts">0</b><span>محاولات الإجابة</span></div>
+   <div class="stat"><b id="statAccuracy">0%</b><span>نسبة الإجابات الصحيحة</span></div>
+  </div>
+  <div class="row" style="margin:12px 0"><button id="exportBtn">⬇ تصدير تقرير CSV</button><button id="backupBtn" style="background:#27836d">حفظ نسخة احتياطية</button><button id="resetBtn" style="background:#b64e57">مسح جميع النتائج</button></div>
+  <h2>نتائج الطلاب والطالبات</h2><div class="tablewrap"><table><thead><tr><th>الاسم</th><th>آخر دخول</th><th>الغرف المكتملة</th><th>الصحيح</th><th>الإجابات</th><th>الإتقان</th></tr></thead><tbody id="reportRows"></tbody></table></div>
+  <h2 style="margin-top:24px">تفصيل المهارات</h2><div class="tablewrap"><table><thead><tr><th>الغرفة</th><th>عدد الإجابات</th><th>الصحيحة</th><th>نسبة الإتقان</th></tr></thead><tbody id="skillRows"></tbody></table></div>
+ </div>
+</section>
+<footer>إعداد المعلمة: فاطمة القرني • لعبة تعليمية للقيم المنزلية</footer>
+</div>
+
+<script>
+const rooms = [
+ {title:"غرفة اسم المنزلة",emoji:"🏷️",color:"#f8d5e5",intro:"اكتشف اسم المنزلة التي يقف فيها كل رقم.",qs:[
+  ["في العدد ٣٤٢، ما اسم منزلة الرقم ٤؟",["الآحاد","العشرات","المئات"],1,"الرقم ٤ في منزلة العشرات."],
+  ["ما اسم منزلة الرقم ٧ في العدد ٧١٥؟",["المئات","العشرات","الآحاد"],0,"الرقم ٧ في منزلة المئات."],
+  ["في العدد ٥٠٨، ما اسم منزلة الرقم ٨؟",["المئات","العشرات","الآحاد"],2,"الرقم ٨ في منزلة الآحاد."],
+  ["تحدي الباب: في العدد ٦٢٩، ما اسم منزلة الرقم ٢؟",["الآحاد","العشرات","المئات","الألوف"],1,"الرقم ٢ في منزلة العشرات."]
+ ]},
+ {title:"غرفة القيمة المنزلية",emoji:"💎",color:"#ccecff",intro:"اعرف قيمة الرقم بحسب مكانه في العدد.",qs:[
+  ["ما القيمة المنزلية للرقم ٣ في العدد ٣٤٦؟",["٣","٣٠","٣٠٠"],2,"٣ في المئات تساوي ٣٠٠."],
+  ["ما قيمة الرقم ٥ في العدد ٢٥١؟",["٥٠","٥","٥٠٠"],0,"٥ في العشرات تساوي ٥٠."],
+  ["ما قيمة الرقم ٩ في العدد ٤٠٩؟",["٩٠","٩","٩٠٠"],1,"٩ في الآحاد تساوي ٩."],
+  ["تحدي الباب: ما قيمة الرقم ٦ في العدد ٢٦٨؟",["٦","٦٠","٦٠٠","٢٠٠"],1,"٦ في العشرات؛ قيمته ٦٠."]
+ ]},
+ {title:"غرفة مهارة حل المسألة",emoji:"🧩",color:"#d9f2d9",intro:"اقرأ المسألة، وحدد المطلوب، ثم اختر الحل.",qs:[
+  ["لدى سارة ١٢٥ ملصقًا، وأعطتها صديقتها ٣٠ ملصقًا. كم أصبح لديها؟",["١٢٥","١٥٥","٩٥"],1,"١٢٥ + ٣٠ = ١٥٥."],
+  ["في المكتبة ٢٤٠ كتابًا، على الرف الأول ١٠٠ وعلى الثاني ٨٠. كم كتابًا على الرف الثالث إذا كان المجموع ٢٤٠؟",["٦٠","٨٠","١٠٠"],0,"٢٤٠ − ١٠٠ − ٨٠ = ٦٠."],
+  ["جمع أحمد ٣٥٠ نقطة، ثم خسر ٥٠ نقطة. كم بقي معه؟",["٤٠٠","٣٠٠","٢٥٠"],1,"٣٥٠ − ٥٠ = ٣٠٠."],
+  ["تحدي الباب: في المدرسة ٣ صفوف، في كل صف ١٠٠ طالب، وانضم ٢٥ طالبًا. كم أصبح العدد؟",["٣٠٠","٣٢٥","٢٧٥","٣٥٠"],1,"٣ × ١٠٠ = ٣٠٠، ثم ٣٠٠ + ٢٥ = ٣٢٥."]
+ ]},
+ {title:"غرفة الصيغة اللفظية",emoji:"🗣️",color:"#fff0bd",intro:"حوّل العدد إلى كلمات عربية صحيحة.",qs:[
+  ["كيف نكتب العدد ٢٤ بالكلمات؟",["أربعة وعشرون","اثنان وأربعون","أربعة وعشرون ومئة"],0,"٢٤: أربعة وعشرون."],
+  ["ما الصيغة اللفظية للعدد ١٠٥؟",["مئة وخمسة","مئة وخمسون","خمسة آلاف"],0,"١٠٥: مئة وخمسة."],
+  ["كيف نكتب العدد ٣٢٠؟",["ثلاثة وعشرون","ثلاثمئة وعشرون","ثلاثمئة واثنان"],1,"٣٢٠: ثلاثمئة وعشرون."],
+  ["تحدي الباب: ما الصيغة اللفظية للعدد ٤٠٧؟",["أربعمئة وسبعة","أربعمئة وسبعون","أربعة آلاف وسبعة"],0,"٤٠٧: أربعمئة وسبعة."]
+ ]},
+ {title:"غرفة الصيغة التحليلية",emoji:"🧱",color:"#e6dcff",intro:"فكّك العدد إلى مجموع القيم المنزلية.",qs:[
+  ["ما الصيغة التحليلية للعدد ٢٣٤؟",["٢٠٠ + ٣٠ + ٤","٢٠ + ٣ + ٤","٢٠٠ + ٣ + ٤"],0,"٢٣٤ = ٢٠٠ + ٣٠ + ٤."],
+  ["حلّل العدد ٥٠٦.",["٥٠٠ + ٦","٥٠ + ٦","٥٠٠ + ٦٠"],0,"٥٠٦ = ٥٠٠ + ٦."],
+  ["أي عدد تمثله ٣٠٠ + ٤٠ + ٢؟",["٣٢٤","٣٤٢","٤٣٢"],1,"٣٠٠ + ٤٠ + ٢ = ٣٤٢."],
+  ["تحدي الباب: ما التحليل الصحيح للعدد ٧١٩؟",["٧٠٠ + ١٠ + ٩","٧٠ + ١٠ + ٩","٧٠٠ + ٩٠ + ١"],0,"٧١٩ = ٧٠٠ + ١٠ + ٩."]
+ ]},
+ {title:"غرفة الصيغة القياسية",emoji:"🔢",color:"#ffe0d5",intro:"اكتب العدد بصورته القياسية باستخدام الأرقام.",qs:[
+  ["ما الصيغة القياسية لـ ٢٠٠ + ٣٠ + ٥؟",["٢٣٥","٢٠٣٥","٢٥٣"],0,"نجمع القيم لنحصل على ٢٣٥."],
+  ["ما العدد الذي تمثله ٤٠٠ + ٨؟",["٤٨٠","٤٠٨","٤٠٠٨"],1,"٤٠٠ + ٨ = ٤٠٨."],
+  ["اكتب: ستمئة وعشرون.",["٦٢","٦٠٢","٦٢٠"],2,"ستمئة وعشرون = ٦٢٠."],
+  ["تحدي الباب: ما العدد الذي يتكون من ٨ مئات و٣ عشرات و٦ آحاد؟",["٨٣٦","٨٦٣","٣٨٦","٨٠٣٦"],0,"٨٠٠ + ٣٠ + ٦ = ٨٣٦."]
+ ]}
+];
+const KEY="placeValueTown_v1", TEACHER_KEY="placeValueTeacherPin_v1";
+let data=JSON.parse(localStorage.getItem(KEY)||'{"students":{},"skills":{}}');
+let currentName="", roomIndex=0, qIndex=0, answered=false, roomScore=0, gatePassed=false;
+const $=id=>document.getElementById(id);
+function save(){localStorage.setItem(KEY,JSON.stringify(data))}
+function show(id){["home","game","teacher"].forEach(x=>$(x).classList.toggle("hide",x!==id))}
+function student(){return data.students[currentName]}
+function initStudent(name){if(!data.students[name])data.students[name]={name,created:new Date().toISOString(),last:new Date().toISOString(),completed:[],correct:0,attempts:0,history:[]};data.students[name].last=new Date().toISOString();save()}
+function renderMap(){
+ const s=currentName?student():null;
+ $("roomGrid").innerHTML=rooms.map((r,i)=>{let done=s&&s.completed.includes(i),unlocked=i===0||(s&&s.completed.includes(i-1));return `<div class="room ${unlocked?'':'locked'}" style="background:${r.color}"><div><div class="emoji">${r.emoji}</div><h3>${i+1}. ${r.title}</h3><small>${done?'✅ مكتملة':unlocked?'🔓 متاحة':'🔒 مغلقة'} • ٣ محطات + تحدي الباب</small></div><button ${unlocked?'':'disabled'} onclick="openRoom(${i})">${done?'إعادة اللعب':'دخول الغرفة'}</button></div>`}).join("");
+ let n=s?s.completed.length:0;$("homeProgress").style.width=(n/6*100)+"%";
+}
+$("startBtn").onclick=()=>{let n=$("studentName").value.trim();if(!n){alert("اكتب اسمك أولًا.");return}currentName=n;initStudent(n);$("playerPill").textContent="👋 "+n;renderMap();show("home")};
+function openRoom(i){if(i>0&&!student().completed.includes(i-1))return;roomIndex=i;qIndex=0;roomScore=0;gatePassed=false;show("game");renderQuestion()}
+function renderQuestion(){
+ const r=rooms[roomIndex],q=r.qs[qIndex];answered=false;
+ $("roomCounter").textContent=`الغرفة ${roomIndex+1} من ٦`;
+ $("roomTitle").textContent=r.emoji+" "+r.title;
+ $("roomIntro").textContent=r.intro;
+ $("stationLabel").textContent=qIndex<3?`المحطة ${qIndex+1} من ٣`:"🚪 تحدي فتح الباب";
+ $("scoreLabel").textContent=`⭐ ${roomScore}`;
+ $("roomProgress").style.width=(qIndex/4*100)+"%";
+ $("question").textContent=q[0];
+ $("options").innerHTML=q[1].map((v,i)=>`<button class="option" onclick="choose(${i})">${["أ","ب","ج","د"][i]}) ${v}</button>`).join("");
+ $("feedback").className="feedback hide";$("nextBtn").classList.add("hide");
+}
+function choose(i){
+ if(answered)return;answered=true;
+ const q=rooms[roomIndex].qs[qIndex],ok=i===q[2],s=student();
+ s.attempts++;if(ok){s.correct++;roomScore++;}s.history.push({room:rooms[roomIndex].title,question:q[0],correct:ok,time:new Date().toISOString()});
+ if(!data.skills[roomIndex])data.skills[roomIndex]={attempts:0,correct:0};data.skills[roomIndex].attempts++;if(ok)data.skills[roomIndex].correct++;
+ save();
+ [...$("options").children].forEach((b,j)=>{b.disabled=true;if(j===q[2])b.classList.add("correct");else if(j===i&&!ok)b.classList.add("wrong")});
+ $("feedback").className="feedback "+(ok?"good":"bad");$("feedback").textContent=(ok?"أحسنت! إجابة صحيحة ⭐ ":"حاول مرة أخرى في المرة القادمة. ") + q[3];
+ $("nextBtn").classList.remove("hide");$("nextBtn").textContent=qIndex===3?"إنهاء الغرفة":"السؤال التالي ←";
+ $("scoreLabel").textContent=`⭐ ${roomScore}`;
+}
+$("nextBtn").onclick=()=>{
+ if(qIndex<3){qIndex++;renderQuestion();return}
+ const s=student();
+ if(gatePassed&&!s.completed.includes(roomIndex)){s.completed.push(roomIndex);s.completed.sort();save()}
+ if(roomIndex===5&&s.completed.includes(5)){alert("رائع! أكملت جميع غرف مدينة القيم المنزلية! 🏆")}
+ else if(roomScore<3){alert("لم تجتز الغرفة هذه المرة. يمكنك إعادة المحاولة والتعلم من التلميحات.")}
+ else if(gatePassed){alert("ممتاز! اجتزت تحدي الباب وفتحت الطريق إلى الغرفة التالية.")}else{alert("لم تجتز تحدي الباب بعد. أعد الغرفة وحاول حل السؤال الأخير لفتح الباب.")}
+ renderMap();show("home")
+};
+$("backHome").onclick=()=>{renderMap();show("home")};
+$("teacherOpen").onclick=()=>{
+ let pin=prompt("أدخلي رمز لوحة المعلمة. الرمز الافتراضي أول مرة هو 2468:");
+ if(pin===null)return;let saved=localStorage.getItem(TEACHER_KEY)||"2468";
+ if(pin!==saved){alert("الرمز غير صحيح.");return}
+ if(!localStorage.getItem(TEACHER_KEY)){let p=prompt("هذا أول دخول. غيّري الرمز الافتراضي 2468 إلى رمز خاص:");if(p&&p.length>=4)localStorage.setItem(TEACHER_KEY,p);else alert("تم الإبقاء على الرمز الافتراضي.")}
+ renderTeacher();show("teacher")
+};
+$("teacherLogout").onclick=()=>show("home");
+function renderTeacher(){
+ const students=Object.values(data.students),attempts=students.reduce((a,s)=>a+s.attempts,0),correct=students.reduce((a,s)=>a+s.correct,0);
+ $("statStudents").textContent=students.length;$("statAttempts").textContent=attempts;$("statAccuracy").textContent=(attempts?Math.round(correct/attempts*100):0)+"%";
+ $("reportRows").innerHTML=students.length?students.map(s=>`<tr><td>${esc(s.name)}</td><td>${new Date(s.last).toLocaleString("ar-SA")}</td><td>${s.completed.length}/٦</td><td>${s.correct}</td><td>${s.attempts}</td><td>${s.attempts?Math.round(s.correct/s.attempts*100):0}%</td></tr>`).join(""):'<tr><td colspan="6">لا توجد نتائج بعد.</td></tr>';
+ $("skillRows").innerHTML=rooms.map((r,i)=>{let v=data.skills[i]||{attempts:0,correct:0};return `<tr><td>${r.title}</td><td>${v.attempts}</td><td>${v.correct}</td><td>${v.attempts?Math.round(v.correct/v.attempts*100):0}%</td></tr>`}).join("");
+}
+function esc(s){return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function download(name,content,type){let a=document.createElement("a"),u=URL.createObjectURL(new Blob([content],{type}));a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000)}
+$("exportBtn").onclick=()=>{
+ let rows=[["الاسم","آخر دخول","الغرف المكتملة","الإجابات الصحيحة","إجمالي الإجابات","نسبة الإتقان"],...Object.values(data.students).map(s=>[s.name,new Date(s.last).toLocaleString("ar-SA"),s.completed.length,s.correct,s.attempts,(s.attempts?Math.round(s.correct/s.attempts*100):0)+"%"])];
+ download("تقرير_مدينة_القيم_المنزلية.csv","\ufeff"+rows.map(r=>r.map(x=>'"'+String(x).replace(/"/g,'""')+'"').join(",")).join("\n"),"text/csv;charset=utf-8");
+};
+$("backupBtn").onclick=()=>download("نسخة_احتياطية_مدينة_القيم.json",JSON.stringify(data,null,2),"application/json");
+$("resetBtn").onclick=()=>{if(confirm("هل أنت متأكدة من مسح جميع نتائج الطلاب؟ لا يمكن التراجع.")){data={students:{},skills:{}};save();renderTeacher();renderMap()}};
+renderMap();
+</script>
+</body>
+</html>
